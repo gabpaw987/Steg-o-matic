@@ -1,0 +1,91 @@
+1) None of my classes have any bugs as far as I know.
+2) My implementation meets all of the big-O requirements, as far as I know.
+3) General clarification: My HashTable class is structure so that it has a private Node struct.
+   Besides a member to save the data and constructors, this Node struct has three data members.
+   One is called m_next and should always point to the next Node within the bucket that the
+   Node is in, if applicable. The other two are called m_nextRecentlyWritten and
+   m_lastRecentlyWritten and serve as pointers for the next recently written list (to meet the
+   big-O requirements for all the functions). This next recently written list is basically a
+   circular doubly linked list with a dummy Node (it's m_head is stored in my HashTable as well)
+   that uses the same Nodes that are also in the HashTable to save the order in which the non-
+   permanent Nodes were added to the HashTable. If the last two pointers of such a Node are
+   nullptrs, then I know that the Node is permanent.
+
+All of the following functions are that way only possible meeting the big-O requirements, since
+the same Nodes have pointers to serve as a recently written linked list and a non-circular,
+singly linked list without a dummy node for each bucket of the hashtable array at the same time.
+Therefore they are only organized in two ways and whenever I look up a Node in one of the two
+places, I also know where it is in the other one.
+
+set():
+	get the bucket number indicating where to place the new Node (this uses the computeHash
+	function and applies modulo number of buckets to that hash)
+	
+	get the current Node at that bucket number
+	if it is not a nullptr, go through all the following Nodes in that bucket
+	    if the current Node has the same key as the parameter of this function
+		update the value of that Node to the new supplied one
+		if that Node is not permanent
+		    "touch the node:"
+		    take the Node out of the recently written list (connecting the the Nodes
+		    before and after through their pointers)
+		    insert it at the start of the recently written list (adjust it's ptrs and
+		    those of the now second node and those of the dummy node of the head)
+		return true
+	
+	if the HashTable is full
+	    return false
+
+	create a new node with that key and value
+	if the new node should not be permanent
+	    insert it at the start of the recently written list (adjust it's ptrs and those
+	    of the now second node and those of the dummy node of the head)
+	
+	get a ptr to the current node at the bucket number where the new one should be inserted
+	if that node ptr is not a nullptr
+	    go through to the end of the singly linked list at that bucket number
+	    insert the node at the end there
+	else
+	    put the new Node directly into the calculated bucket of the HashTable array
+
+	increment the number of elements in the HashTable
+	return true
+
+touch():
+	get the bucket number indicating where to place the new Node (this uses the computeHash
+	function and applies modulo number of buckets to that hash)
+	
+	get the current Node at that bucket number
+	if it is not a nullptr, go through all the following Nodes in that bucket
+	    if the current Node has the same key as the parameter of this function and is not 
+	    permanent
+		take the Node out of the recently written list (connecting the the Nodes before
+		and after through their pointers)
+		insert it at the start of the recently written list (adjust it's ptrs and those
+	   	of the now second node and those of the dummy node of the head)
+		return true
+	return false
+
+discard():
+	get the least recently written Node
+	if there is none (it is the head)
+	    return false
+
+	set the key and value parameters to those of the Node to be discarded
+	take the node out of the recently written list (by making the, now, last Node point to 
+	the head and the head point back to that node)
+	
+	get the current Node at that bucket number
+	if it's next node is not a nullptr
+	    go through all the following Nodes in that bucket
+		if the current Node's next node has the same key as the parameter
+		    make the current node point to the one after the node to discard
+		    break
+	else
+	    set the hashTable array element at that bucket to a nullptr
+
+	delete the node that is discarded
+	decrement the number of items in the HashTable
+
+	return true
+	
